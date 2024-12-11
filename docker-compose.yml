@@ -1,0 +1,39 @@
+version: "3.8"
+services:
+  backend:
+    build:
+      context: ./backend # Build the backend from the ./backend directory
+    ports:
+      - "5000:5000" # Expose backend on port 5000
+    volumes:
+      - ./backend:/app # Sync the local backend code to the /app directory inside the container
+      - /app/node_modules # Prevent overwriting node_modules in the container
+    environment:
+      - NODE_ENV=development
+    command: npm run dev # Run the backend using nodemon for hot reloading
+    depends_on:
+      - mongodb
+
+  frontend:
+    build:
+      context: ./frontend/my-app
+    ports:
+      - "3000:3000" # Expose frontend on port 3000
+    volumes:
+      - ./frontend/my-app:/app # Sync local frontend code to container
+      - /app/node_modules # Prevent overwriting node_modules
+    environment:
+      - WATCHPACK_POLLING=true # Enable file watching in Docker for React
+    stdin_open: true
+    command: npm start # Start the React development server
+
+  mongodb:
+    image: mongo:5.0
+    container_name: video-management-mongodb
+    ports:
+      - "27017:27017" # Expose MongoDB on port 27017
+    volumes:
+      - mongo-data:/data/db # Persist MongoDB data
+
+volumes:
+  mongo-data: # Persistent volume for MongoDB
